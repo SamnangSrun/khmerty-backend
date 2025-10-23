@@ -12,7 +12,13 @@ class UserController extends Controller
     // Helper to return full image URL
     private function formatUserResponse(User $user)
     {
-        $user->profile_image_url = $user->profile_image ? asset('storage/' . $user->profile_image) : null;
+        // Add full URL for profile image
+        if ($user->profile_image) {
+            // Return the storage path that can be accessed
+            $user->profile_image_url = url('storage/' . $user->profile_image);
+        } else {
+            $user->profile_image_url = null;
+        }
         return $user;
     }
 
@@ -221,6 +227,11 @@ class UserController extends Controller
         }
 
         $users = $query->latest()->paginate(20);
+
+        // Format each user to include profile_image_url
+        $users->getCollection()->transform(function ($user) {
+            return $this->formatUserResponse($user);
+        });
 
         return response()->json($users);
     }

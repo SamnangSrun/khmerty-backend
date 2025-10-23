@@ -124,5 +124,50 @@ class NotificationController extends Controller
 
         return response()->json($notifications);
     }
-}
 
+    // Get sent notifications history (admin only)
+    public function getSentNotifications()
+    {
+        if (auth()->user()->role !== 'admin') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        // Get unique notifications with user info
+        // Group by message, type, and created_at to show unique sent notifications
+        $notifications = Notification::with('user:id,name,email')
+            ->select('id', 'user_id', 'message', 'type', 'created_at')
+            ->latest()
+            ->limit(50)
+            ->get()
+            ->map(function ($notification) {
+                // Check if this notification was sent to all users
+                $sameMessageCount = Notification::where('message', $notification->message)
+                    ->where('type', $notification->type)
+                    ->whereBetween('created_at', [
+                        $notification->created_at->copy()->subSeconds(5),
+                        $notification->created_at->copy()->addSeconds(5)
+                    ])
+                    ->count();
+                
+                $totalUsers = User::count();
+                
+                return [
+                    'id' => $notification->id,
+                    'message' => $notification->message,
+                    'type' => $notification->type,
+                    'created_at' => $notification->created_at,
+                    'sent_to_all' => $sameMessageCount >= $totalUsers,
+                    'user' => $notification->user,
+                ];
+            })
+            // Remove duplicates based on message and created_at
+            ->unique(function ($item) {
+                return $item['message'] . $item['created_at']->timestamp;
+            })
+            ->values();
+
+        return response()->json([
+            'notifications' => $notifications
+        ]);
+    }
+}

@@ -60,21 +60,22 @@ public function viewSellerRequests()
         $requests = SellerRequest::with('user')->get();
 
         $data = $requests->map(function($request) {
+            // Use UserController's formatUserResponse method for consistent user data
+            $userController = new UserController();
+            $reflection = new \ReflectionClass($userController);
+            $method = $reflection->getMethod('formatUserResponse');
+            $method->setAccessible(true);
+            $formattedUser = $method->invoke($userController, $request->user);
+
             return [
                 'id' => $request->id,
                 'status' => $request->status,
-                'rejection_note' => $request->rejection_note, // ✅ Corrected
+                'rejection_note' => $request->rejection_note,
                 'name' => $request->name,
                 'store_name' => $request->store_name,
                 'birthdate' => $request->birthdate,
                 'phone_number' => $request->phone_number,
-                'user' => [
-                    'id' => $request->user->id,
-                    'name' => $request->user->name,
-                    'email' => $request->user->email,
-                    'role' => $request->user->role,
-                    'profile_image' => $request->user->profile_image,
-                ]
+                'user' => $formattedUser
             ];
         });
 

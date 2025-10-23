@@ -156,8 +156,8 @@ Route::get('/books/search', [BookController::class, 'search']);
    
    
     Route::apiResource('payments', PaymentController::class)->only(['store', 'show']);
-    Route::apiResource('notifications', NotificationController::class)->only(['store', 'show', 'update']);
-    Route::put('notifications/{notification}/read', [NotificationController::class, 'markAsRead']);
+    // Route::apiResource('notifications', NotificationController::class)->only(['store', 'show', 'update']); // Commented out - using specific routes below
+    // Route::put('notifications/{notification}/read', [NotificationController::class, 'markAsRead']); // Duplicate - defined below
 // });
 
 // ==================== NEWS APP ROUTES ====================
@@ -205,6 +205,7 @@ Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
     // Notification Management
     Route::post('/notifications', [NotificationController::class, 'store']);
     Route::get('/notifications/all', [NotificationController::class, 'getAllNotifications']);
+    Route::get('/notifications/sent', [NotificationController::class, 'getSentNotifications']);
     
     // News Categories
     Route::get('/news/categories', [NewsCategoryController::class, 'adminIndex']);
