@@ -68,11 +68,11 @@ public function userOrders()
     return response()->json($orders);
 }
 
-    // 1. Place order from cart
+   
 public function placeOrder()
 {
     $user = auth()->user();
-    $cart = $user->cart()->with('items.book')->first(); // Load books with items
+    $cart = $user->cart()->with('items.book')->first(); 
 
     if (!$cart || $cart->items->isEmpty()) {
         return response()->json(['message' => 'Cart is empty'], 400);

@@ -132,8 +132,7 @@ class NotificationController extends Controller
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-        // Get unique notifications with user info
-        // Group by message, type, and created_at to show unique sent notifications
+       
         $notifications = Notification::with('user:id,name,email')
             ->select('id', 'user_id', 'message', 'type', 'created_at')
             ->latest()
